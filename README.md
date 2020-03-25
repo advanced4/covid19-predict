@@ -16,6 +16,8 @@ The expected format is a *.csv file that looks like the following:
 where the first column is simply an incrementing integer,
 the second column is the total confirmed cases, and the third column is the date
 
+I used Python 3.8.2 for this. Main requirements are sklearn, pandas, statsmodels, and matplotlib
+
 ## Settings
 
 Settings are directly in the *.py file, at the top
