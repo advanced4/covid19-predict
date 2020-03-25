@@ -11,7 +11,7 @@ from datetime import date, timedelta, datetime
 ########## SETTINGS ##########
 forecast_days = 7
 show_fit_on_actual = False
-show_that_one_giant_red_line = True
+show_that_one_giant_red_line = False
 ignore_shitty_ones = True
 file_to_load = "example"
 ##############################
