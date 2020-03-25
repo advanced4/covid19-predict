@@ -1,3 +1,4 @@
+import os
 from statsmodels.tsa.api import Holt
 import pandas as pd
 from sklearn import svm
@@ -5,18 +6,20 @@ from sklearn.svm import SVR
 from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
-####################
+from datetime import date, timedelta, datetime
+
+########## SETTINGS ##########
 forecast_days = 7
 show_fit_on_actual = False
 show_that_one_giant_red_line = True
 ignore_shitty_ones = True
-file_to_load = "csv filename here without extension"
-####################
+file_to_load = "example"
+##############################
 
 if ignore_shitty_ones:
     kernels = ['linear', 'poly']
 else:
-    kernels = ['linear', 'poly', 'rbf', 'sigmoid'] # for SVM stuf
+    kernels = ['linear', 'poly', 'rbf', 'sigmoid']  # for SVM stuf
 
 def getplotdata(clf):
     x,y = [],[]
@@ -31,6 +34,7 @@ def getplotdata(clf):
         y.append(clf.predict([[i]])[0])
     return x,y
 
+
 def predict_forecast_days(type, clf):
     print(type)
     for i in range(0,forecast_days+1):
@@ -38,23 +42,22 @@ def predict_forecast_days(type, clf):
     x1, y1 = getplotdata(clf)
     plt.plot(x1, y1, label=type)
 
+
 def get_time_labels():
-    from datetime import date, timedelta
-
-    sdate = date(2020, 3, 16)  # start date-1
     edate = date.today() + timedelta(days=forecast_days)  # end date
-
-    delta = edate - sdate  # as timedelta
+    delta = edate - start_date  # as timedelta
 
     labels = []
     for i in range(0,delta.days + 1,1):
-        day = sdate + timedelta(days=i)
+        day = start_date + timedelta(days=i)
         labels.append(str(day.month) + "/" + str(day.day))
     print(labels)
     return labels
 
 ##############################################################
-df = pd.read_csv('data\\'+file_to_load+'.csv')
+df = pd.read_csv('data' +os.path.sep + file_to_load+'.csv')
+start_date = datetime.strptime(df['date'][0], '%m/%d/%y').date()
+
 total_data = df['total'].values.tolist()
 time_data = df['entry'].values.tolist()
 tomorrow = len(time_data)
