@@ -40,4 +40,4 @@ Settings are directly in the *.py file, at the top
     file_to_load = "example"
     
 ## Example output
-![Covid19Example](https://github.com/advanced4/covid19-predict/example_output.png)
+![Covid19Example](https://github.com/advanced4/covid19-predict/raw/master/example_output.png)
