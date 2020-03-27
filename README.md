@@ -1,20 +1,22 @@
 # covid19-predict
 A little python example that generates a graph showing multiple common prediction models
 
+# Common Models
 ## Overview
 
 This an example usage of common time series forecasting models, applied to COVID-19 data.
 The expected format is a *.csv file that looks like the following:
 
-    entry,total,date
-    0,1,3/16/20
-    1,2,3/17/20
-    2,4,3/18/20
-    3,13,3/19/20
+    total_cum,recovered_new,deaths_new,date
+    1,0,0,3/16/20
+    2,0,0,3/17/20
+    4,0,0,3/18/20
+    8,0,0,3/19/20
     ...
-    
-where the first column is simply an incrementing integer,
-the second column is the total confirmed cases, and the third column is the date
+        
+where the first column is the total cumulative confirmed cases of that date,
+the second column is the new recovered cases for that day, the third column is the new
+ confirmed deaths for that day, and finally the date
 
 I used Python 3.8.2 for this. Main requirements are sklearn, pandas, statsmodels, and matplotlib
 
@@ -43,3 +45,22 @@ Settings are directly in the *.py file, at the top
     
 ## Example output
 ![Covid19Example](https://github.com/advanced4/covid19-predict/raw/master/example_output.png)
+
+# SIR Model
+## Overview
+Based mostly on work from https://github.com/Lewuathe/COVID19-SIR and https://www.kaggle.com/saga21/covid-global-forecast-sir-model-ml-regressions/notebook
+
+see https://en.wikipedia.org/wiki/Compartmental_models_in_epidemiology#The_SIR_model
+
+The SIR Model:
+"The model consists of three compartments: S for the number of susceptible, I for the number of infectious, and R for the number recovered (or immune) individuals. This model is reasonably predictive for infectious diseases which are transmitted from human to human"
+
+An example of what it looks like:
+![SIRExample](https://github.com/advanced4/covid19-predict/raw/master/example_sir.png)
+
+Fitting the SIR model to data
+![SIRFitExample](https://github.com/advanced4/covid19-predict/raw/master/example_sir_fit.png)
+
+Predicting w/ SIR model
+Fitting the SIR model to data
+![SIRPrediction](https://github.com/advanced4/covid19-predict/raw/master/example_sir_prediction.png)

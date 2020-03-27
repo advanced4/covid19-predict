@@ -7,6 +7,7 @@ from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from datetime import date, timedelta, datetime
+import numpy as np
 
 ########## SETTINGS ##########
 forecast_days = 7
@@ -36,9 +37,9 @@ def getplotdata(clf):
 
 
 def predict_forecast_days(type, clf):
-    print(type)
-    for i in range(0,forecast_days+1):
-        print("\t" + str(tomorrow+i) + str(clf.predict([[tomorrow+i]])))
+    #print(type)
+    #for i in range(0,forecast_days+1):
+    #    print("\t" + str(tomorrow+i) + str(clf.predict([[tomorrow+i]])))
     x1, y1 = getplotdata(clf)
     plt.plot(x1, y1, label=type)
 
@@ -51,15 +52,14 @@ def get_time_labels():
     for i in range(0,delta.days + 1,1):
         day = start_date + timedelta(days=i)
         labels.append(str(day.month) + "/" + str(day.day))
-    print(labels)
     return labels
 
 ##############################################################
 df = pd.read_csv('data' +os.path.sep + file_to_load+'.csv')
 start_date = datetime.strptime(df['date'][0], '%m/%d/%y').date()
 
-total_data = df['total'].values.tolist()
-time_data = df['entry'].values.tolist()
+total_data = df['total_cum'].values.tolist()
+time_data = list(range(0, len(total_data)))
 tomorrow = len(time_data)
 
 air = pd.Series(total_data, time_data)
@@ -90,8 +90,8 @@ fcast3.plot(ax=ax, color='green', legend=True, label="Holt's Additive damped tre
 
 ######################
 
-y = df['total'].values.reshape(-1,1)
-x = df['entry'].values.reshape(-1,1)
+y = np.asarray(total_data).reshape(-1,1)
+x = np.asarray(time_data).reshape(-1,1)
 
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.01, random_state=422)
 #####################
