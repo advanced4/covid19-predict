@@ -9,6 +9,7 @@ from scipy.optimize import minimize
 ########## SETTINGS #############
 county = "example"
 county_pop = 100000
+predict_range = 90
 #################################
 
 # Susceptible equation
@@ -107,8 +108,8 @@ def show_custom_sir_model(pop, beta, gamma):
     N = float(pop)
     b0 = 0
     #beta = 0.7
-    beta = beta/100.0
-    gamma = gamma/100.0
+    #beta = beta/100.0
+    #gamma = gamma/100.0
     #gamma = 0.2
     hs = 0.1
 
@@ -118,11 +119,11 @@ def show_custom_sir_model(pop, beta, gamma):
     plt.plot(sus, 'b.', label='susceptible')
     plt.plot(inf, 'r.', label='infected')
     plt.plot(rec, 'c.', label='recovered/deceased')
-    plt.title("SIR model")
+    plt.title("Custom SIR model (prbably bad)")
     plt.xlabel("time", fontsize=10)
     plt.ylabel("Fraction of population", fontsize=10)
     plt.legend(loc='best')
-    plt.xlim(0,14000)
+    plt.xlim(0,150)
     #plt.savefig('SIR_example.png')
     plt.show()
 
@@ -139,15 +140,22 @@ def sir_model(y, t, N, beta, gamma):
 def fit_odeint(xdata, beta, gamma):
     return integrate.odeint(sir_model, (sus0, inf0, rec0), xdata, args=(N, beta, gamma))[:,1]
 
+def get_per_day_from_total(arr):
+    newc = []
+    newc.append(arr[0])
+    for i in range(1, len(arr)):
+        newc.append(arr[i]-arr[i-1])
+    return newc
+
 #################################
-show_sample_sir_model()
+# show_sample_sir_model()
 #################################
 df = pd.read_csv('data' +os.path.sep + county+'.csv')
 ydata = df['total_cum'].values.tolist()
 xdata = list(range(0, len(ydata)))
 dates = df['date'].values.tolist()
-recovered = df['recovered_new'].values.tolist()
-deaths = df['deaths_new'].values.tolist()
+recovered = get_per_day_from_total(df['total_recovered'].values.tolist())
+deaths = get_per_day_from_total(df['total_deaths'].values.tolist())
 
 N = float(county_pop)
 inf0 = ydata[0]
@@ -164,16 +172,8 @@ plt.ylabel("#Persons Infected")
 plt.xlabel("Days Since First Case - " + dates[0])
 plt.show()
 print("Optimal parameters: beta =", popt[0], " and gamma = ", popt[1])
-
+#show_custom_sir_model(N, popt[0], popt[1])
 ###########################################################
-
-def get_new_cases_per_day_from_total():
-    newc = []
-    newc.append(ydata[0])
-    for i in range(1, len(ydata)):
-        newc.append(ydata[i]-ydata[i-1])
-    return newc
-
 
 def extend_index(values, new_size):
     for i in range(len(values), len(values)+new_size):
@@ -196,7 +196,7 @@ def loss(point, data, recovered, s_0, i_0, r_0):
     return alpha * l1 + (1 - alpha) * l2
 
 
-predict_range = 45
+
 def predict(beta, gamma, data, recovered, death, s_0, i_0, r_0):
     new_index = extend_index(xdata, predict_range)
     size = len(new_index)
@@ -214,7 +214,8 @@ def predict(beta, gamma, data, recovered, death, s_0, i_0, r_0):
 
 
 # this is amount per day, not total
-data = get_new_cases_per_day_from_total()
+data = get_per_day_from_total(ydata)
+
 
 optimal = minimize(loss, [0.001, 0.001], args=(data, recovered, sus0, inf0, rec0), method='L-BFGS-B', bounds=[(0.0000001, 0.4), (0.0000001, 0.4)])
 print(optimal)

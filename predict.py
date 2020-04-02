@@ -10,8 +10,8 @@ from datetime import date, timedelta, datetime
 import numpy as np
 
 ########## SETTINGS ##########
-forecast_days = 7
-show_fit_on_actual = False
+forecast_days = 20
+show_fit_on_actual = True
 show_that_one_giant_red_line = False
 ignore_shitty_ones = True
 file_to_load = "example"

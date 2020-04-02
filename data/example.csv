@@ -1,4 +1,4 @@
-total_cum,recovered_new,deaths_new,date
+total_cum,total_recovered,total_deaths,date
 1,0,0,3/16/20
 2,0,0,3/17/20
 4,0,0,3/18/20
