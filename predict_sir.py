@@ -8,8 +8,9 @@ from scipy.optimize import minimize
 
 ########## SETTINGS #############
 county = "example"
-county_pop = 100000
-predict_range = 90
+county_pop = 460001
+predict_range = 60
+complexity = 0.0000001  # original is 0.00000001
 #################################
 
 # Susceptible equation
@@ -154,8 +155,8 @@ df = pd.read_csv('data' +os.path.sep + county+'.csv')
 ydata = df['total_cum'].values.tolist()
 xdata = list(range(0, len(ydata)))
 dates = df['date'].values.tolist()
-recovered = get_per_day_from_total(df['total_recovered'].values.tolist())
-deaths = get_per_day_from_total(df['total_deaths'].values.tolist())
+recovered = df['total_recovered'].values.tolist()
+deaths = df['total_deaths'].values.tolist()
 
 N = float(county_pop)
 inf0 = ydata[0]
@@ -213,14 +214,10 @@ def predict(beta, gamma, data, recovered, death, s_0, i_0, r_0):
     return new_index, extended_actual, extended_recovered, extended_death, solve_ivp(SIR, [0, size], [s_0, i_0, r_0], t_eval=np.arange(0, size, 1))
 
 
-# this is amount per day, not total
-data = get_per_day_from_total(ydata)
-
-
-optimal = minimize(loss, [0.001, 0.001], args=(data, recovered, sus0, inf0, rec0), method='L-BFGS-B', bounds=[(0.0000001, 0.4), (0.0000001, 0.4)])
+optimal = minimize(loss, [0.001, 0.001], args=(ydata, recovered, sus0, inf0, rec0), method='L-BFGS-B', bounds=[(complexity, 0.4), (complexity, 0.4)])
 print(optimal)
 beta, gamma = optimal.x
-new_index, extended_actual, extended_recovered, extended_death, prediction = predict(beta, gamma, data, recovered, deaths, sus0, inf0, rec0)
+new_index, extended_actual, extended_recovered, extended_death, prediction = predict(beta, gamma, ydata, recovered, deaths, sus0, inf0, rec0)
 df = pd.DataFrame(
     {'Infected data': extended_actual, 'Recovered data': extended_recovered, 'Death data': extended_death, 'Susceptible': prediction.y[0], 'Infected': prediction.y[1],
      'Recovered': prediction.y[2]}, index=new_index)
