@@ -5,12 +5,16 @@ from scipy import integrate, optimize
 from scipy.integrate import solve_ivp
 import os
 from scipy.optimize import minimize
+from datetime import date, timedelta, datetime
+from settings import file_to_load, population
 
 ########## SETTINGS #############
-county = "example"
-county_pop = 460001
-predict_range = 60
+county = file_to_load
+forecast_days = 60
 complexity = 0.0000001  # original is 0.00000001
+show_sample_model = False
+show_bad_custom_model = False
+show_actual_fit = False
 #################################
 
 # Susceptible equation
@@ -81,6 +85,7 @@ def SIR(N, b0, beta, gamma, hs):
 
     return sus, inf, rec
 
+
 def show_sample_sir_model():
     # Parameters of the model
     N = 7800*(10**6)
@@ -100,7 +105,6 @@ def show_sample_sir_model():
     plt.ylabel("Fraction of population", fontsize=10)
     plt.legend(loc='best')
     plt.xlim(0, 1000)
-    #plt.savefig('SIR_example.png')
     plt.show()
 
 
@@ -125,7 +129,6 @@ def show_custom_sir_model(pop, beta, gamma):
     plt.ylabel("Fraction of population", fontsize=10)
     plt.legend(loc='best')
     plt.xlim(0,150)
-    #plt.savefig('SIR_example.png')
     plt.show()
 
 
@@ -141,6 +144,7 @@ def sir_model(y, t, N, beta, gamma):
 def fit_odeint(xdata, beta, gamma):
     return integrate.odeint(sir_model, (sus0, inf0, rec0), xdata, args=(N, beta, gamma))[:,1]
 
+
 def get_per_day_from_total(arr):
     newc = []
     newc.append(arr[0])
@@ -148,32 +152,37 @@ def get_per_day_from_total(arr):
         newc.append(arr[i]-arr[i-1])
     return newc
 
+
 #################################
-# show_sample_sir_model()
+if show_sample_model:
+    show_sample_sir_model()
 #################################
 df = pd.read_csv('data' +os.path.sep + county+'.csv')
+start_date = datetime.strptime(df['date'][0], '%m/%d/%y').date()
 ydata = df['total_cum'].values.tolist()
 xdata = list(range(0, len(ydata)))
 dates = df['date'].values.tolist()
 recovered = df['total_recovered'].values.tolist()
 deaths = df['total_deaths'].values.tolist()
 
-N = float(county_pop)
+N = float(population)
 inf0 = ydata[0]
 sus0 = N - inf0
 rec0 = 0.0
 
-popt, pcov = optimize.curve_fit(fit_odeint, xdata, ydata)
-fitted = fit_odeint(xdata, *popt)
+if show_actual_fit:
+    popt, pcov = optimize.curve_fit(fit_odeint, xdata, ydata)
+    fitted = fit_odeint(xdata, *popt)
 
-plt.plot(xdata, ydata, 'o')
-plt.plot(xdata, fitted)
-plt.title("Fit of SIR model to " + county)
-plt.ylabel("#Persons Infected")
-plt.xlabel("Days Since First Case - " + dates[0])
-plt.show()
-print("Optimal parameters: beta =", popt[0], " and gamma = ", popt[1])
-#show_custom_sir_model(N, popt[0], popt[1])
+    plt.plot(xdata, ydata, 'o')
+    plt.plot(xdata, fitted)
+    plt.title("Fit of SIR model to " + county)
+    plt.ylabel("#Persons Infected")
+    plt.xlabel("Days Since First Case - " + dates[0])
+    plt.show()
+    print("Optimal parameters: beta =", popt[0], " and gamma = ", popt[1])
+if show_bad_custom_model:
+    show_custom_sir_model(N, popt[0], popt[1])
 ###########################################################
 
 def extend_index(values, new_size):
@@ -199,7 +208,7 @@ def loss(point, data, recovered, s_0, i_0, r_0):
 
 
 def predict(beta, gamma, data, recovered, death, s_0, i_0, r_0):
-    new_index = extend_index(xdata, predict_range)
+    new_index = extend_index(xdata, forecast_days)
     size = len(new_index)
 
     def SIR(t, y):
@@ -214,6 +223,16 @@ def predict(beta, gamma, data, recovered, death, s_0, i_0, r_0):
     return new_index, extended_actual, extended_recovered, extended_death, solve_ivp(SIR, [0, size], [s_0, i_0, r_0], t_eval=np.arange(0, size, 1))
 
 
+def get_time_labels():
+    edate = date.today() + timedelta(days=forecast_days)  # end date
+    delta = edate - start_date  # as timedelta
+
+    labels = []
+    for i in range(0,delta.days + 1,1):
+        day = start_date + timedelta(days=i)
+        labels.append(str(day.month) + "/" + str(day.day))
+    return labels
+
 optimal = minimize(loss, [0.001, 0.001], args=(ydata, recovered, sus0, inf0, rec0), method='L-BFGS-B', bounds=[(complexity, 0.4), (complexity, 0.4)])
 print(optimal)
 beta, gamma = optimal.x
@@ -223,9 +242,15 @@ df = pd.DataFrame(
      'Recovered': prediction.y[2]}, index=new_index)
 fig, ax = plt.subplots(figsize=(15, 10))
 ax.set_title(county)
+
+plt.xticks(ticks=range(0, len(get_time_labels())+1), labels=get_time_labels())
+for label in ax.xaxis.get_ticklabels()[::2]:
+    label.set_visible(False)
+
 df.plot(ax=ax)
+plt.xticks(rotation=45)
 print(f"country={county}, beta={beta:.8f}, gamma={gamma:.8f}, r_0:{(beta / gamma):.8f}")
 plt.title("SIR model prediction of " + county)
 plt.ylabel("#Persons Infected")
-plt.xlabel("Days Since First Case - " + dates[0])
+# plt.xlabel("Days Since First Case - " + dates[0])
 plt.show()

@@ -8,13 +8,13 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from datetime import date, timedelta, datetime
 import numpy as np
+from settings import file_to_load
 
 ########## SETTINGS ##########
 forecast_days = 20
 show_fit_on_actual = True
 show_that_one_giant_red_line = False
 ignore_shitty_ones = True
-file_to_load = "example"
 ##############################
 
 if ignore_shitty_ones:
