@@ -12,8 +12,8 @@ from settings import file_to_load
 
 ########## SETTINGS ##########
 forecast_days = 20
-show_fit_on_actual = True
-show_that_one_giant_red_line = False
+show_fit_on_actual = False
+show_that_one_giant_red_line = True
 ignore_shitty_ones = True
 ##############################
 
@@ -111,6 +111,7 @@ for k in kernels:
 
 # idk why i have to do this
 plt.xticks(ticks=range(0, len(get_time_labels())+1), labels=get_time_labels())
+plt.xticks(rotation=45)
 plt.ylabel("Total confirmed cases")
 plt.title(file_to_load)
 plt.legend()

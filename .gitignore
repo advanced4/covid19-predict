@@ -2,3 +2,5 @@
 data/*
 !data/example.csv
 settings.py
+.idea
+__pycache__

@@ -11,7 +11,7 @@ from settings import file_to_load, population
 ########## SETTINGS #############
 county = file_to_load
 forecast_days = 60
-complexity = 0.0000001  # original is 0.00000001
+complexity = 0.00000001  # original is 0.00000001
 show_sample_model = False
 show_bad_custom_model = False
 show_actual_fit = False
