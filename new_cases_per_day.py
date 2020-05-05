@@ -37,6 +37,7 @@ fig, ax = plt.subplots(figsize=(15, 10))
 
 plt.bar(get_time_labels(), diff_arr)
 plt.ylabel('Day by day increase')
+plt.title("New cases per day")
 # plt.xticks(ticks=range(0, len(get_time_labels())+1), labels=get_time_labels())
 # for label in ax.xaxis.get_ticklabels()[::2]:
 #    label.set_visible(False)
